@@ -380,5 +380,5 @@ async def on_reaction_add(reaction, users):
             elif str(reaction.emoji) == '\U0001F4DD':
                 await reaction.message.channel.send("플레이리스트가 나오면 생길 기능이랍니다. 추후에 올릴 영상을 기다려주세요!")
 
-access_token = os.environ("BOT_TOKEN")
+access_token = os.environ('BOT_TOKEN')
 bot.run(access_token)
