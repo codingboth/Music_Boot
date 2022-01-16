@@ -31,7 +31,8 @@ def title(msg):
     options = webdriver.ChromeOptions()
     options.add_argument("headless")
 
-    driver = load_chrome_driver()
+    chromedriver_dir = "F:\Discord_bot\chromedriver.exe"
+    driver = webdriver.Chrome(chromedriver_dir)
     driver.get("https://www.youtube.com/results?search_query="+msg+"+lyrics")
     source = driver.page_source
     bs = bs4.BeautifulSoup(source, 'lxml')
@@ -78,31 +79,12 @@ def play_next(ctx):
             del song_queue[0]
             vc.play(discord.FFmpegPCMAudio(URL,**FFMPEG_OPTIONS), after=lambda e: play_next(ctx))
 
-        else:
-            if not vc.is_playing():
-                bot.loop.create_task(vc.disconnect())
-
-def load_chrome_driver():
-      
-    options = webdriver.ChromeOptions()
-
-    options.binary_location = os.getenv('GOOGLE_CHROME_BIN')
-
-    options.add_argument('--headless')
-    # options.add_argument('--disable-gpu')
-    options.add_argument('--no-sandbox')
-
-    return webdriver.Chrome(executable_path=str(os.environ.get('CHROME_EXECUTABLE_PATH')), chrome_options=options)
-
 @bot.event
 async def on_ready():
     print('다음으로 로그인합니다: ')
     print(bot.user.name)
     print('connection was succesful')
     await bot.change_presence(status=discord.Status.online, activity=discord.Game("디스코드 봇 코딩"))
-
-    if not discord.opus.is_loaded():
-        discord.opus.load_opus('opus')
 
 @bot.command()
 async def 들어와(ctx):
@@ -161,7 +143,8 @@ async def 재생(ctx, *, msg):
         YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
             
-        driver = load_chrome_driver()
+        chromedriver_dir = "F:\Discord_bot\chromedriver.exe"
+        driver = webdriver.Chrome(chromedriver_dir, options = options)
         driver.get("https://www.youtube.com/results?search_query="+msg+"+lyrics")
         source = driver.page_source
         bs = bs4.BeautifulSoup(source, 'lxml')
@@ -289,6 +272,19 @@ async def 목록재생(ctx):
             await ctx.send("노래가 이미 재생되고 있어요!")
 
 @bot.command()
+async def 스킵(ctx):
+    if len(user) > 1:
+        if vc.is_playing():
+            vc.stop()
+            global number
+            number = 0
+            await ctx.send(embed = discord.Embed(title = "스킵", description = musicnow[1] + "을(를) 다음에 재생합니다!", color = 0x00ff00))
+        else:
+            await ctx.send("노래가 이미 재생되고 있어요!")
+    else:
+        await ctx.send("목록에 노래가 2개 이상 없네요..")
+        
+@bot.command()
 async def 즐겨찾기(ctx):
     global Ftext
     Ftext = ""
@@ -334,7 +330,8 @@ async def 즐겨찾기추가(ctx, *, msg):
             options = webdriver.ChromeOptions()
             options.add_argument("headless")
 
-            driver = load_chrome_driver()
+            chromedriver_dir = "F:\Discord_bot\chromedriver.exe"
+            driver = webdriver.Chrome(chromedriver_dir)
             driver.get("https://www.youtube.com/results?search_query="+msg+"+lyrics")
             source = driver.page_source
             bs = bs4.BeautifulSoup(source, 'lxml')
