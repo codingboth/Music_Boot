@@ -1,1 +1,1 @@
-worker: python iron.py
+worker: python durex.py
