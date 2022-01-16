@@ -1,3 +1,4 @@
+from lib2to3.pgen2.driver import Driver
 import discord
 from discord.ext import commands
 from youtube_dl import YoutubeDL
@@ -30,8 +31,7 @@ def title(msg):
     options = webdriver.ChromeOptions()
     options.add_argument("headless")
 
-    chromedriver_dir = "F:\Discord_bot\chromedriver.exe"
-    driver = webdriver.Chrome(chromedriver_dir)
+    driver = load_chrome_driver()
     driver.get("https://www.youtube.com/results?search_query="+msg+"+lyrics")
     source = driver.page_source
     bs = bs4.BeautifulSoup(source, 'lxml')
@@ -78,12 +78,31 @@ def play_next(ctx):
             del song_queue[0]
             vc.play(discord.FFmpegPCMAudio(URL,**FFMPEG_OPTIONS), after=lambda e: play_next(ctx))
 
+        else:
+            if not vc.is_playing():
+                bot.loop.create_task(vc.disconnect())
+
+def load_chrome_driver():
+      
+    options = webdriver.ChromeOptions()
+
+    options.binary_location = os.getenv('GOOGLE_CHROME_BIN')
+
+    options.add_argument('--headless')
+    # options.add_argument('--disable-gpu')
+    options.add_argument('--no-sandbox')
+
+    return webdriver.Chrome(executable_path=str(os.environ.get('CHROME_EXECUTABLE_PATH')), chrome_options=options)
+
 @bot.event
 async def on_ready():
     print('다음으로 로그인합니다: ')
     print(bot.user.name)
     print('connection was succesful')
     await bot.change_presence(status=discord.Status.online, activity=discord.Game("디스코드 봇 코딩"))
+
+    if not discord.opus.is_loaded():
+        discord.opus.load_opus('opus')
 
 @bot.command()
 async def 들어와(ctx):
@@ -142,8 +161,7 @@ async def 재생(ctx, *, msg):
         YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
             
-        chromedriver_dir = "F:\Discord_bot\chromedriver.exe"
-        driver = webdriver.Chrome(chromedriver_dir, options = options)
+        driver = load_chrome_driver()
         driver.get("https://www.youtube.com/results?search_query="+msg+"+lyrics")
         source = driver.page_source
         bs = bs4.BeautifulSoup(source, 'lxml')
@@ -316,8 +334,7 @@ async def 즐겨찾기추가(ctx, *, msg):
             options = webdriver.ChromeOptions()
             options.add_argument("headless")
 
-            chromedriver_dir = "F:\Discord_bot\chromedriver.exe"
-            driver = webdriver.Chrome(chromedriver_dir)
+            driver = load_chrome_driver()
             driver.get("https://www.youtube.com/results?search_query="+msg+"+lyrics")
             source = driver.page_source
             bs = bs4.BeautifulSoup(source, 'lxml')
@@ -369,7 +386,7 @@ async def on_reaction_add(reaction, users):
                     if userFlist[i][0] == str(users.name):
                         for j in range(1, len(userFlist[i])):
                             try:
-                                driver.close()
+                                Driver.close()
                             except:
                                 print("NOT CLOSED")
 
